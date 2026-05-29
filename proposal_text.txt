@@ -1,0 +1,296 @@
+﻿--- PAGE 1 ---
+PROPOSAL TUGAS BESAR ANALISIS BIG DATA
+Sains Data Institut Teknologi Sumatera 2026
+Judul Tugas Besar
+Prediksi Kualitas Air Menggunakan Random Forest Classifier Berbasis PySpark untuk
+Mendukung Ketersediaan Air Bersih
+Identitas Mahasiswa
+Nama
+No NIM Username Github
+Peran
+1 Muhammad Aqil Ramadhan 123450066 MuhammadAqil1
+2 Monica Patricia Tanjung 123450073 monica25c
+3 Rafi Diva Efangga 123450001 rafidivaefangga
+4 Chevando Daffa Pramanda 122450095 chevandodp
+5 Allya Nurul Islami Pasha 122450033 allyapasha
+Tema Tugas Besar
+Air Bersih dan Sanitasi
+Ringkasan Proposal
+Ringkasan proposal (maksimum 300 kata) berisi Urgensi, tujuan, metode, dan luaran yang
+dihasilkan/targetkan
+Kualitas air merupakan isu global yang berdampak langsung pada kesehatan manusia dan
+keberlanjutan lingkungan. Di banyak wilayah dunia, termasuk negara berkembang, metode
+konvensional pengujian laboratorium masih menjadi andalan evaluasi kualitas air, namun metode ini
+memiliki keterbatasan: membutuhkan waktu lama, biaya tinggi, dan tidak praktis untuk pemantauan
+real-time. Proyek ini bertujuan membangun model prediksi kualitas air berbasis Random Forest
+Classifier menggunakan PySpark, yang mampu mengklasifikasikan potabilitas air secara otomatis
+berdasarkan 10 parameter fisikokimia: pH, kekerasan, total padatan terlarut, kloramin, sulfat,
+konduktivitas, karbon organik, trihalometan, kekeruhan, dan potabilitas. Dataset yang digunakan
+adalah Water Quality Dataset dari Kaggle (3.276 sampel, format CSV). Metode utama adalah Random
+Forest Classifier dari Spark MLlib dengan pembagian data 80% training dan 20% testing. Evaluasi
+model menggunakan metrik akurasi, F1-score, precision, dan recall dengan target ΓëÑ 1.0 (100%),
+mengacu pada hasil paper utama (Alomani et al., 2022, IJACSA Vol. 13 No. 6). Luaran yang
+ditargetkan meliputi: pipeline big data berbasis PySpark untuk prediksi potabilitas air, laporan analisis
+korelasi antar fitur, serta visualisasi distribusi fitur dan matriks evaluasi model. Proyek ini relevan
+dalam mendukung SDG ke-6 (Air Bersih dan Sanitasi untuk Semua) dengan menyediakan solusi
+pemantauan kualitas air yang efisien, skalabel, dan berbasis data.
+Kata kunci
+Isian 5 kata kunci yang dipisahkan dengan tanda titik koma (;)
+Kata Kunci : Random Forest; Kualitas Air; PySpark; Machine Learning; Potabilitas Air
+--- PAGE 2 ---
+Substansi Usulan
+Petunjuk: Pengusul hanya diperkenankan mengisi di tempat yang telah disediakan (diberi warna ΓÇª.)
+sesuai dengan petunjuk pengisian dan tidak diperkenankan untuk memodifikasi template menghapus
+setiap bagian.
+A. RINGKASAN PAPER
+Pilih satu paper yang paling relevan dengan proyek Anda dan tuliskan ringkasannya disini. Jangan
+melebihi 2 halaman untuk bagian ini.
+Tabel 1. Rincian Paper yang diulas
+Judul Prediction of Quality of Water According to a Random Forest Classifier
+Penulis Shahd Maadi Alomani, Najd Ibrahim Alhawiti, A'aeshah Alhakamy
+Jurnal International Journal of Advanced Computer Science and Applications (IJACSA)
+Tahun 2022
+URL https://www.ijacsa.thesai.org (Vol. 13, No. 6, 2022)
+1. LATAR BELAKANG
+Gambarkan konteks paper: apa motivasi dan masalah yang dikemukakan para penulis? Masalah apa
+yang ingin mereka selesaikan atau pengetahuan apa yang ingin mereka temukan?
+Air minum merupakan kebutuhan dasar manusia yang kualitasnya kian terancam akibat
+polusi industri, perubahan iklim, dan eksploitasi berlebihan terhadap sumber air bawah tanah
+maupun permukaan. Metode konvensional untuk mengevaluasi kualitas air, yaitu melalui
+analisis laboratorium, terbukti memakan waktu, biaya besar, dan tidak praktis untuk
+diterapkan secara masif. Penulis termotivasi untuk mencari pendekatan alternatif yang lebih
+efisien dengan memanfaatkan machine learning dan big data. Masalah inti yang ingin
+diselesaikan adalah bagaimana memprediksi kelayakan minum (potability) air sungai secara
+otomatis berdasarkan parameter fisikokimia yang terukur, tanpa harus bergantung penuh pada
+pengujian laboratorium manual. Penelitian ini berusaha menjawab dua pertanyaan: faktor apa
+yang paling memengaruhi kelayakan air, dan apakah model Random Forest dapat
+memprediksinya secara akurat.
+2. RINGKASAN KONTRIBUSI
+Setiap paper memberikan sesuatu yang baru. Uraikan kontribusi utamanya - algoritma baru, hasil
+eksperimen, dataset baru, atau analisis baru
+Kontribusi utama paper ini adalah pengembangan pipeline machine learning berbasis
+PySpark di atas kerangka kerja Apache Spark yang mengimplementasikan algoritma Random
+Forest Classifier untuk memprediksi kelayakan minum air. Kontribusi ini mencakup beberapa
+hal yang saling melengkapi. Pertama, penelitian ini mendemonstrasikan penggunaan Spark
+MLlib dalam skenario klasifikasi kualitas air skala besar, yang merupakan pendekatan big
+data nyata, bukan sekadar machine learning biasa. Kedua, digunakan sepuluh fitur sekaligus
+(pH, kekerasan, padatan terlarut, kloramin, sulfat, konduktivitas, karbon organik,
+trihalometan, kekeruhan, dan kelayakan minum) sebagai variabel prediktor yang
+komprehensif. Ketiga, penelitian ini menerapkan pipeline ML lengkap mulai dari eksplorasi
+data, penanganan nilai NULL dengan imputasi rata-rata, analisis korelasi menggunakan
+heatmap, hingga evaluasi model dengan metrik akurasi, presisi, recall, dan F1-score. Model
+--- PAGE 3 ---
+berhasil mencapai akurasi sempurna 1,0 pada semua metrik evaluasi, dan secara komparatif
+mengungguli model-model dari penelitian sebelumnya berdasarkan nilai RMSE.
+3. KETERBATASAN DAN DISKUSI
+Identifikasi keterbatasan metodologi atau klaim generalisasi paper ini secara kritis. Apakah
+keterbatasan tersebut mengubah cara Anda menilai temuan paper ini?
+Paper ini memiliki beberapa keterbatasan yang perlu dikritisi. Akurasi sempurna (1,0) pada
+semua metrik sangat tidak lazim dan menimbulkan kecurigaan adanya data leakage atau
+overfitting, terlebih tanpa penjelasan eksplisit dari penulis. Dataset juga tidak
+didokumentasikan secara memadai sumber, jumlah baris, dan distribusi kelas tidak
+disebutkan sehingga eksperimen sulit direproduksi. Selain itu, absennya cross-validation
+melemahkan validitas hasil, dan tidak ada diskusi mengapa model bisa sangat akurat padahal
+analisis korelasi menunjukkan tidak ada fitur yang berkorelasi kuat dengan kelayakan minum.
+Secara keseluruhan, keterbatasan-keterbatasan ini mengharuskan kita bersikap kritis terhadap
+generalisasi temuan paper ke konteks data dunia nyata.
+4. MENGAPA PAPER INI?
+Dari sekian banyak paper, mengapa Anda memilih ini? Apa yang menarik dari topiknya? Setelah
+membacanya, apakah Anda mendapat apa yang diharapkan?
+Paper ini dipilih karena memiliki kesesuaian yang sangat kuat dengan tema mata kuliah
+Analisis Big Data, khususnya dalam hal penggunaan Apache Spark/PySpark sebagai platform
+pemrosesan terdistribusi dan penerapan machine learning pipeline untuk klasifikasi data skala
+besar. Topiknya relevan secara sosial dan lingkungan karena menyentuh isu kualitas air yang
+juga menjadi tantangan nyata di Indonesia. Paper ini menyajikan contoh konkret penerapan
+Spark MLlib yang dapat dipelajari dan direplikasi. Setelah membacanya, paper ini
+memberikan gambaran alur kerja end-to-end dari data mentah hingga evaluasi model dalam
+ekosistem big data, meskipun terdapat kekurangan pada sisi transparansi metodologi. Hal
+tersebut justru membuka ruang bagi pengerjaan tugas besar untuk memperbaiki dan
+memperluas pendekatan yang digunakan dalam paper.
+5. KONTEKS RISET YANG LEBIH LUAS
+Hubungkan paper ini dengan tema-tema besar dalam Big Data: pemrosesan terdistribusi,
+manajemen kualitas data, skalabilitas, analitik real-time vs. batch, atau kesiapan data untuk machine
+learning. Apakah metode ini berpotensi diterapkan ke domain lain?
+Paper ini bersinggungan langsung dengan beberapa tema besar dalam Big Data. Dari sisi
+pemrosesan terdistribusi, penggunaan PySpark menunjukkan bagaimana beban komputasi
+ML dapat didistribusikan untuk menangani data dalam skala besar yang tidak mungkin
+diproses secara sekuensial. Dari sisi manajemen kualitas data, paper ini mencontohkan
+penanganan nilai hilang (NULL) dan normalisasi data sebagai langkah krusial sebelum
+pelatihan model. Dari sudut pandang analitik batch vs. real-time, penelitian ini beroperasi
+dalam mode batch, namun para penulis sendiri menyebutkan potensi pengembangan ke arah
+pemrosesan stream data sensor secara real-time di masa depan. Dalam konteks kesiapan data
+untuk machine learning, analisis distribusi probabilitas dan matriks korelasi yang dilakukan
+mencerminkan praktik baik eksplorasi data (EDA) sebelum pemodelan. Metode ini sangat
+bisa diterapkan ke domain lain seperti pemantauan kualitas udara, deteksi anomali pada data
+sensor IoT industri, atau sistem peringatan dini bencana lingkungan, yang semuanya
+melibatkan data multivariabel kontinu dalam skala besar.
+--- PAGE 4 ---
+B. DESKRIPSI PROYEK
+1. TUJUAN UTAMA
+Rumuskan tujuan proyek Anda, idealnya sebagai pertanyaan ilmiah. Contoh: ΓÇ£Apakah arsitektur
+Medallion berbasis Spark dapat meningkatkan throughput pemrosesan data ekspor dibandingkan
+pipeline tradisional?ΓÇ¥ Jelaskan mengapa tujuan ini penting dan memungkinkan dicapai. Sebutkan
+tujuan sekunder (stretch goal) jika ada, dan hubungkan dengan paper yang Anda pilih.
+Apakah model Random Forest Classifier berbasis PySpark dapat memprediksi potabilitas air
+sungai dengan akurasi ΓëÑ 95% menggunakan 10 parameter fisikokimia, sebagai alternatif yang
+lebih efisien dibandingkan pengujian laboratorium konvensional?
+Tujuan ini penting karena kualitas air minum merupakan isu kesehatan publik yang mendesak
+WHO melaporkan lebih dari 2 miliar orang tidak memiliki akses air minum yang aman.
+Pemantauan berbasis machine learning dapat memberikan solusi yang lebih cepat, murah,
+dan skalabel. Tujuan ini dapat dicapai karena dataset Water Quality (Kaggle) tersedia secara
+publik, platform PySpark sudah matang untuk implementasi, dan paper rujukan utama
+(Alomani et al., 2022) telah membuktikan feasibilitas pendekatan ini.
+Tujuan sekunder (stretch goals): (1) Mengidentifikasi fitur fisikokimia yang paling
+berpengaruh terhadap potabilitas air menggunakan analisis feature importance dari Random
+Forest; (2) Memvisualisasikan distribusi probabilitas setiap fitur dan heatmap korelasi untuk
+mendapatkan insight data secara eksploratif; (3) Membandingkan performa Random Forest
+dengan baseline model (Decision Tree, SVM) menggunakan metrik RMSE dan F1-score; (4)
+Mendiskusikan potensi penerapan sistem prediksi ini untuk mendukung pencapaian SDG
+ke-6 dalam konteks Indonesia, merujuk pada studi Junaedi (2022) dan Wadu et al. (2020).
+2. STUDI KASUS / DOMAIN APLIKASI
+Domain apa yang menjadi fokus proyek Anda? Berikan contoh konkret: apa input datanya dan apa
+output analitik yang diharapkan? Jika sudah dijelaskan dalam ringkasan paper, maka buat lebih
+detail disini.
+Domain proyek adalah kualitas air sungai dan air permukaan. Proyek ini berfokus pada
+klasifikasi biner potabilitas air: apakah suatu sampel air layak diminum (potable=1) atau
+tidak (potable=0) berdasarkan 10 parameter fisikokimia yang dapat diukur menggunakan
+sensor lapangan maupun data historis.
+Input data: File CSV dari Kaggle (water_potability.csv) berisi 3.276 sampel air dengan 10
+fitur numerik: pH (keasaman air, rentang 6.52ΓÇô6.83 untuk air layak minum), Hardness
+(kekerasan dari garam magnesium dan kalsium, mg/L), Solids (total padatan terlarut, TDS
+dalam ppm), Chloramines (konsentrasi kloramin disinfektan, max 4 mg/L), Sulfate (sulfat
+alami dalam air, 3ΓÇô30 mg/L), Conductivity (konduktivitas listrik, max 400 ┬╡S/cm),
+Organic_carbon (karbon organik total, <2 mg/L untuk air minum), Trihalomethanes (THM
+dari proses klorinasi, <80 ppm), Turbidity (kekeruhan, <5 NTU sesuai WHO), dan Potability
+(label target: 0=tidak layak, 1=layak minum).
+Output analitik yang diharapkan: (1) Label klasifikasi potabilitas untuk setiap sampel air; (2)
+Probabilitas potabilitas sebagai indikator kepercayaan model; (3) Laporan metrik evaluasi
+model (accuracy, F1-score, precision, recall); (4) Heatmap korelasi antar fitur; (5) Grafik
+distribusi probabilitas setiap fitur (density plot); (6) Perbandingan performa Random Forest
+vs. baseline model.
+--- PAGE 5 ---
+3. DATASET
+Sebutkan dataset yang akan digunakan (sumber, ukuran, format). Jelaskan prapemrosesan
+yang direncanakan. Jika mengumpulkan data sendiri, jelaskan caranya dan estimasi
+waktu yang diperlukan.
+Dataset yang digunakan adalah Water Quality Dataset yang tersedia secara publik di platform
+Kaggle (https://www.kaggle.com/datasets/adityakadiwal/water-potability). Dataset ini
+mencakup 3.276 sampel air dengan format CSV (┬▒525 KB), berisi 10 kolom fitur fisikokimia
+numerik dan 1 kolom label target (Potability: 0 atau 1).
+Rencana prapemrosesan data: (1) Eksplorasi data awal: pemeriksaan tipe data, statistik
+deskriptif (mean, std, min, max), dan identifikasi nilai NULL. Fitur pH (491 nilai NULL),
+Sulfate (781 nilai NULL), dan Trihalomethanes (162 nilai NULL) akan ditangani dengan
+imputasi mean kolom. (2) Pembersihan data: penghapusan data duplikat dan konversi tipe
+data dari string ke float. (3) Analisis korelasi: menggunakan heatmap Seaborn untuk
+mengidentifikasi hubungan antar fitur dan menentukan apakah reduksi dimensi diperlukan.
+(4) Normalisasi fitur: standardisasi menggunakan StandardScaler dari Spark MLlib agar
+semua fitur berada pada skala yang sama untuk optimasi performa model. (5) Pembagian
+dataset: 80% data training (┬▒2.620 sampel) dan 20% data testing (┬▒656 sampel) secara acak
+menggunakan randomSplit() di PySpark.
+Sumber: Kaggle, dataset tersedia secara bebas, tidak memerlukan proses pengumpulan data
+lapangan. Estimasi waktu preprocessing: ┬▒2ΓÇô3 hari kerja untuk implementasi dan validasi
+pipeline.
+4. ARSITEKTUR DAN TEKNOLOGI
+Jelaskan komponen teknis utama yang akan digunakan dan bagaimana mereka berinteraksi. Jika
+menggunakan Medallion Architecture, jelaskan setiap lapisannya. Tunjukkan mana yang
+diimplementasikan sendiri dan mana yang menggunakan konfigurasi yang sudah ada.
+Arsitektur proyek mengadopsi pipeline machine learning berbasis PySpark dengan alur:
+Ingesti Data ΓåÆ Preprocessing ΓåÆ Feature Engineering ΓåÆ Model Training ΓåÆ Evaluasi ΓåÆ
+Visualisasi.
+Komponen teknis utama: (1) Apache Spark & PySpark (v3.x): platform komputasi
+terdistribusi untuk memproses dataset CSV skala besar menggunakan DataFrame API.
+PySpark memungkinkan operasi paralel yang jauh lebih cepat dibandingkan pemrosesan
+sekuensial Pandas. (2) Spark MLlib ΓÇô Random Forest Classifier: library machine learning
+terintegrasi Spark untuk membangun model klasifikasi ensemble berbasis pohon keputusan.
+(3) PySpark Pipeline API: mengatur alur preprocessing dan training secara modular dan
+reproducible menggunakan objek Pipeline() dari pyspark.ml. (4) Seaborn & Matplotlib:
+library visualisasi Python untuk menghasilkan heatmap korelasi, density plot distribusi fitur,
+dan confusion matrix. (5) Jupyter Notebook: environment pengembangan interaktif untuk
+eksplorasi data dan dokumentasi analisis. (6) Google Colab / Databricks Community Edition
+(opsional): platform cloud untuk menjalankan PySpark tanpa perlu setup cluster lokal.
+Interaksi komponen: Data CSV dibaca oleh Spark menggunakan SparkSession, lalu melalui
+pipeline preprocessing (VectorAssembler, StandardScaler), kemudian dilatih oleh
+RandomForestClassifier, dan akhirnya dievaluasi menggunakan
+MulticlassClassificationEvaluator.
+--- PAGE 6 ---
+Komponen utama: PySpark & Apache Spark, Random Forest Classifier (Spark
+MLlib),Python dan Jupyter Notebook
+Diimplementasikan sendiri: pipeline preprocessing, penanganan nilai NULL, konversi tipe
+data dan normalisasi, pembagian dataset (80% training / 20% testing), konfigurasi Random
+Forest (jumlah tree, max depth, fitur sampling), serta visualisasi dan analisis hasil model
+(heatmap korelasi, distribusi fitur, evaluasi akurasi dan F1-score).
+Menggunakan konfigurasi yang tersedia : Random Forest dari Spark MLlib untuk klasifikasi
+potabilitas air, dan PySpark pipeline untuk mengatur alur preprocessing serta training model.
+5. METODE PEMBANDING (BASELINE)
+Metode apa yang digunakan sebagai pembanding? Misalnya: pemrosesan sekuensial tanpa
+distribusi, pipeline sederhana satu lapisan, atau implementasi yang telah dipublikasikan. Jelaskan
+apakah diimplementasikan sendiri atau diambil dari sumber lain.
+1. SMO-SVM (Sequential Minimal Optimization Support Vector Machine), digunakan
+di studi sebelumnya untuk prediksi kualitas air dengan dataset serupa. Evaluasi
+dilakukan menggunakan RMSE, R┬▓, MAE, dan error relatif.
+2. Decision Tree, KNN, SVR, MLR, Ridge Regression, GBRT, model-model ini
+digunakan sebagai perbandingan pada dataset yang sama untuk menilai keunggulan
+ensemble Random Forest.
+Metode baseline ini diambil dari publikasi lain, tanpa modifikasi. Nilai evaluasi seperti
+RMSE atau F1-score dari model-model baseline ini menjadi tolok ukur untuk menilai
+keunggulan Random Forest yang diimplementasikan sendiri.
+6. EVALUASI
+Tentukan minimal satu metrik kuantitatif yang jelas. Contoh metrik yang umum digunakan:
+throughput (baris/detik), latensi end-to-end pipeline, akurasi prediksi (RMSE/MAE untuk regresi,
+silhouette score untuk clustering), atau rasio kompresi penyimpanan. Sebutkan nilai acuan (baseline
+score) yang ada di literatur atau yang Anda targetkan.
+Rencana evaluasi proyek menggunakan metrik kuantitatif untuk menilai performa model
+Random Forest dalam memprediksi potabilitas air
+Tabel 2. Metrik evaluasi yang direncanakan
+Metrik Acuan (Baseline) Target
+Akurasi klasifikasi 0.95 ΓÇô 0.97 (model ΓëÑ 1.0 (100%)
+(accuracy) konvensional/SMO-SVM,
+Decision Tree, KNN)
+F1-score 0.94 ΓÇô 0.96 (baseline) ΓëÑ 1.0
+Precision 0.94 ΓÇô 0.96 (baseline) ΓëÑ 1.0
+Recal 0.94 ΓÇô 0.96 (baseline) ΓëÑ 1.0
+ΓùÅ Akurasi (accuracy) menunjukkan seberapa sering model memprediksi potabilitas air
+dengan benar dibanding nilai aktual.
+ΓùÅ F1-score merupakan kombinasi precision dan recall yang menyeimbangkan
+kemampuan model dalam mendeteksi air layak minum dan meminimalkan kesalahan
+prediksi.
+--- PAGE 7 ---
+ΓùÅ Target evaluasi ditetapkan pada 1.0 (100%), mengikuti hasil eksperimen dalam paper
+yang menggunakan Random Forest, di mana model mencapai akurasi, F1-score,
+precision, dan recall masing-masing 1.0 pada dataset yang digunakan
+7. TANTANGAN ETIS DAN RISIKO SOSIAL
+Tulis satu paragraf yang membahas: (A) minimal dua tantangan etis atau risiko sosial yang spesifik
+untuk proyek Anda - misalnya privasi data, potensi bias dalam model prediksi yang memengaruhi
+kebijakan, transparansi algoritma terhadap pemangku kepentingan, atau ketergantungan pada data
+yang tidak representatif - dan (B) strategi mitigasi yang spesifik dan praktis. Bagian ini dinilai
+berdasarkan kedalaman pemikiran.
+Tantangan Etis :Salah satu tantangan etis utama adalah privasi dan representativitas data.
+Dataset kualitas air bisa berbeda antara sungai, wilayah hulu, dan musim tertentu, sehingga
+jika model dilatih hanya pada sebagian sampel, prediksi bisa bias dan tidak representatif
+untuk semua kondisi sungai, yang berpotensi memengaruhi kebijakan lingkungan atau
+keputusan pengelolaan sumber daya air. Risiko sosial lain adalah ketergantungan berlebihan
+pada prediksi otomatis tanpa verifikasi laboratorium, yang bisa menimbulkan risiko
+kesehatan jika model salah memprediksi potabilitas air.
+Strategi :
+ΓùÅ Menggunakan dataset yang beragam dari berbagai lokasi dan kondisi, serta
+pembagian data secara acak untuk mengurangi bias.
+ΓùÅ Menyediakan indikator ketidakpastian prediksi sehingga pengguna dapat
+memverifikasi sampel kritis secara manual sebelum mengambil keputusan.
+ΓùÅ Menekankan bahwa model sebagai alat bantu keputusan, bukan pengganti pengujian
+laboratorium, sehingga keputusan kebijakan tetap memperhatikan validasi lapangan
+dan protokol keamanan air.
+REFERENSI
+[1] S. M. Alomani, N. I. Alhawiti, and A. Alhakamy, "Prediction of Quality of Water According to a
+Random Forest Classifier," International Journal of Advanced Computer Science and Applications
+(IJACSA), vol. 13, no. 6, pp. 892ΓÇô899, 2022. [Online]. Available: https://www.ijacsa.thesai.org
+[2] L. G. I. Fatristya, W. Saimah, I. Hadi, and E. Aryanti, "Peran Air Bersih dan Sanitasi dalam
+Meningkatkan Kualitas Hidup: Tinjauan Literatur terhadap Pencapaian Tujuan SDGs 2030,"
+GeoScienceEd, vol. 6, no. 1, pp. 596ΓÇô602, 2025. doi: https://doi.org/10.29303/geoscienceed.v6i1.598
+[3] M. Junaedi, "Sanitasi, Pengelolaan dan Akses Air Bersih Untuk Peningkatan Kesehatan di
+Indonesia," Jurnal Tampiasih, vol. 1, no. 1, pp. 6ΓÇô10, 2022. E-ISSN: 2986-8742
+[4] L. B. Wadu, A. F. Gultom, and F. Pantus, "Penyediaan Air Bersih dan Sanitasi: Bentuk
+Keterlibatan Masyarakat dalam Pembangunan Berkelanjutan," Jurnal Pendidikan Kewarganegaraan,
+vol. 10, no. 2, pp. 80ΓÇô87, 2020.
+[5] J. Xu, Z. Xu, J. Kuang, C. Lin, L. Xiao, X. Huang, and Y. Zhang, "An Alternative to Laboratory
+Testing: Random Forest-Based Water Quality Prediction Framework for Inland and Nearshore Water
+Bodies," Water, vol. 13, no. 22, p. 3262, 2021. doi: https://doi.org/10.3390/w13223262

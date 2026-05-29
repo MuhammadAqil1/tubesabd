@@ -1,0 +1,17 @@
+# Folder output (tapi tetap simpan subfolder)
+output/figures/*.png
+output/model/
+output/*.parquet
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Docker
+.env
+
+# OS
+.DS_Store
+Thumbs.db

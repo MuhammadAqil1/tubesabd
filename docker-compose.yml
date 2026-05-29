@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+
+  # ── Jupyter + PySpark ────────────────────────────────────────
+  spark-jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: abedeh-spark-jupyter
+    ports:
+      - "8888:8888"    # Jupyter Lab / Notebook
+      - "4040:4040"    # Spark UI (job pertama)
+      - "4041:4041"    # Spark UI (job kedua, jika 4040 bentrok)
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+      JUPYTER_TOKEN: "abedeh2024"
+      SPARK_OPTS: "--driver-java-options=-Xms1g --driver-java-options=-Xmx2g"
+    volumes:
+      # Mount folder proyek ke dalam kontainer
+      - ./notebooks:/home/jovyan/work/notebooks
+      - ./output:/home/jovyan/work/output
+      - ./scripts:/home/jovyan/work/scripts
+      - ./water_potability.csv:/home/jovyan/work/data/water_potability.csv
+    restart: unless-stopped
+    mem_limit: 4g
+    cpus: "2.0"
+
+volumes: {}
+
+networks:
+  default:
+    name: abedeh-net
+    driver: bridge
