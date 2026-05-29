@@ -1,7 +1,21 @@
 # Panduan Setup Tugas Besar ABD — Prediksi Potabilitas Air Sungai
-> Random Forest Classifier · PySpark MLlib · Jupyter Notebook · Docker
+> Random Forest Classifier · PySpark MLlib · Apache Spark + Hadoop · Docker
 >
 > **Kelompok 1** | Dataset: `water_potability.csv` (3.276 sampel, 10 fitur fisikokimia)
+
+---
+
+## Apakah Perlu Spark dan Hadoop?
+
+| Komponen | Diperlukan? | Keterangan |
+|---|---|---|
+| **Apache Spark / PySpark** | ✅ Ya, wajib | Inti dari seluruh analisis: DataFrame API, MLlib, Pipeline |
+| **Hadoop (HDFS)** | ✅ Ya, ikuti standar praktikum | Digunakan sebagai penyimpanan dataset di dalam cluster |
+| **YARN** | ✅ Ya, ikuti standar praktikum | Resource manager bawaan setup dosen |
+
+> Proyek ini menggunakan **lingkungan yang sama** dengan praktikum modul 9 —
+> yaitu repositori `bigdata-spark` milik dosen. Notebook tugas besar dijalankan
+> di dalam kontainer yang sama.
 
 ---
 
@@ -9,16 +23,17 @@
 
 1. [Prasyarat](#1-prasyarat)
 2. [Persiapan WSL2 & Docker Desktop](#2-persiapan-wsl2--docker-desktop)
-3. [Clone Repositori & Struktur Folder](#3-clone-repositori--struktur-folder)
-4. [Membuat Semua File Konfigurasi dari WSL](#4-membuat-semua-file-konfigurasi-dari-wsl)
-5. [Membangun Docker Image](#5-membangun-docker-image)
-6. [Menjalankan Kontainer](#6-menjalankan-kontainer)
-7. [Verifikasi Kontainer & Layanan](#7-verifikasi-kontainer--layanan)
-8. [Mengakses Jupyter Lab & Spark UI](#8-mengakses-jupyter-lab--spark-ui)
-9. [Mengunggah Dataset ke Kontainer](#9-mengunggah-dataset-ke-kontainer)
-10. [Menjalankan Notebook Analisis](#10-menjalankan-notebook-analisis)
-11. [Menghentikan Kontainer](#11-menghentikan-kontainer)
-12. [Checklist Sebelum Pengumpulan](#12-checklist-sebelum-pengumpulan)
+3. [Clone Repositori bigdata-spark (Lingkungan Dosen)](#3-clone-repositori-bigdata-spark-lingkungan-dosen)
+4. [Clone Repositori Tugas Besar & Susun Folder](#4-clone-repositori-tugas-besar--susun-folder)
+5. [Mengunduh Binary Hadoop & Spark](#5-mengunduh-binary-hadoop--spark)
+6. [Membangun Docker Image](#6-membangun-docker-image)
+7. [Menjalankan Kontainer](#7-menjalankan-kontainer)
+8. [Verifikasi Layanan Hadoop & HDFS](#8-verifikasi-layanan-hadoop--hdfs)
+9. [Mengakses Web UI](#9-mengakses-web-ui)
+10. [Persiapan Dataset di HDFS](#10-persiapan-dataset-di-hdfs)
+11. [Menjalankan Notebook Analisis](#11-menjalankan-notebook-analisis)
+12. [Menghentikan Kontainer](#12-menghentikan-kontainer)
+13. [Checklist Sebelum Pengumpulan](#13-checklist-sebelum-pengumpulan)
 
 ---
 
@@ -32,7 +47,7 @@ Pastikan seluruh perangkat lunak berikut sudah terpasang sebelum memulai.
 | Docker Compose | 2.20 | `docker compose version` |
 | Git | 2.x | `git --version` |
 | WSL2 + Ubuntu 22.04 | — | `wsl --list --verbose` |
-| RAM tersedia | 6 GB | Task Manager / `free -h` |
+| RAM tersedia | 8 GB | Task Manager / `free -h` |
 
 > **Windows:** Semua perintah bash dijalankan dari dalam terminal **WSL Ubuntu**,
 > bukan PowerShell. Pastikan Docker Desktop sudah diintegrasikan dengan WSL2
@@ -44,13 +59,13 @@ Pastikan seluruh perangkat lunak berikut sudah terpasang sebelum memulai.
 
 ### 2.1 Instalasi WSL2 (jika belum ada)
 
-Buka **PowerShell sebagai Administrator** lalu jalankan:
+Buka **PowerShell sebagai Administrator**, lalu jalankan:
 
 ```powershell
 wsl --install -d Ubuntu-22.04
 ```
 
-Tunggu hingga selesai, lalu restart komputer jika diminta. Setelah restart, Ubuntu akan meminta membuat username dan password baru — isi sesuai keinginan.
+Restart komputer jika diminta. Setelah restart, buka Ubuntu dan buat username + password.
 
 Verifikasi WSL sudah berjalan:
 
@@ -67,27 +82,18 @@ Output yang diharapkan:
 ### 2.2 Aktifkan Integrasi Docker dengan WSL2
 
 1. Buka **Docker Desktop**
-2. Klik **Settings** (ikon roda gigi)
-3. Pilih **Resources** → **WSL Integration**
-4. Aktifkan toggle **Ubuntu-22.04**
-5. Klik **Apply & Restart**
+2. Klik **Settings** (ikon ⚙️) → **Resources** → **WSL Integration**
+3. Aktifkan toggle **Ubuntu-22.04**
+4. Klik **Apply & Restart**
 
-Verifikasi Docker dapat diakses dari WSL (jalankan dari terminal Ubuntu):
+Verifikasi dari terminal **WSL Ubuntu**:
 
 ```bash
 docker --version
 docker compose version
 ```
 
-Output yang diharapkan:
-```
-Docker version 24.x.x, build ...
-Docker Compose version v2.x.x
-```
-
-### 2.3 Update Paket Ubuntu (Opsional tapi Disarankan)
-
-Jalankan perintah berikut dari terminal **WSL Ubuntu**:
+### 2.3 Update Paket Ubuntu
 
 ```bash
 sudo apt-get update && sudo apt-get upgrade -y
@@ -95,268 +101,189 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 ---
 
-## 3. Clone Repositori & Struktur Folder
+## 3. Clone Repositori bigdata-spark (Lingkungan Dosen)
 
-### 3.1 Clone dari GitHub
-
-Buka terminal **WSL Ubuntu**, lalu navigasikan ke direktori kerja dan clone repositori:
+Semua perintah berikut dijalankan dari terminal **WSL Ubuntu**.
 
 ```bash
-# Pindah ke drive C (lokasi Windows)
+# Pindah ke drive C
 cd /mnt/c/Users
 
-# Buat folder kerja (sesuaikan nama user Windows Anda)
-mkdir -p "Muhammad Aqil/tubesabd-kerja"
-cd "Muhammad Aqil/tubesabd-kerja"
+# Buat folder kerja (ganti "Muhammad Aqil" sesuai nama user Windows Anda)
+mkdir -p "Muhammad Aqil/praktikum-abd"
+cd "Muhammad Aqil/praktikum-abd"
 
-# Clone repositori
-git clone https://github.com/MuhammadAqil1/tubesabd.git
-cd tubesabd
+# Clone repositori lingkungan dosen
+git clone https://github.com/sains-data/bigdata-spark.git
+cd bigdata-spark
 ```
 
-> **Catatan:** Jika sudah clone, cukup masuk ke direktori:
-> ```bash
-> cd /mnt/c/Users/Muhammad\ Aqil/tubesabd-kerja/tubesabd
-> ```
-
-### 3.2 Buat Direktori yang Dibutuhkan
+Pastikan tidak ada masalah line ending pada script shell:
 
 ```bash
-# Buat folder output (jika belum ada)
-mkdir -p notebooks output/figures output/model scripts
+find . -name "*.sh" -exec sed -i 's/\r//' {} \;
 ```
 
-### 3.3 Struktur Folder Lengkap
+Buat direktori khusus untuk tugas besar:
 
-Setelah clone, struktur folder akan terlihat seperti ini:
-
+```bash
+mkdir -p tubesabd/notebooks tubesabd/data tubesabd/output/figures tubesabd/output/model tubesabd/scripts
 ```
-tubesabd/                              ← root repositori
-├── README.md                          ← panduan ini
-├── Dockerfile                         ← image PySpark + Jupyter
-├── docker-compose.yml                 ← definisi service kontainer
-├── requirements.txt                   ← library Python tambahan
-├── water_potability.csv               ← dataset utama (3.276 sampel)
-├── notebooks/
-│   ├── 01_eda.ipynb                   ← Exploratory Data Analysis
-│   ├── 02_preprocessing.ipynb         ← Preprocessing & Feature Engineering
-│   ├── 03_modeling.ipynb              ← Training & Evaluasi Random Forest
-│   └── 04_visualisasi.ipynb           ← Visualisasi & Perbandingan Baseline
-├── output/
-│   ├── figures/                       ← grafik hasil analisis (PNG)
-│   └── model/                         ← model tersimpan (opsional)
-└── scripts/
-    └── run_pipeline.py                ← skrip pipeline lengkap (non-interaktif)
-```
-
-> **Catatan line ending:** Jika ada masalah dengan file, pastikan tidak ada CRLF:
-> ```bash
-> find . -name "*.py" -exec sed -i 's/\r//' {} \;
-> ```
 
 ---
 
-## 4. Membuat Semua File Konfigurasi dari WSL
+## 4. Clone Repositori Tugas Besar & Susun Folder
 
-> Jika sudah clone dari GitHub, **semua file ini sudah ada** — lewati ke [Langkah 5](#5-membangun-docker-image).
-> Bagian ini hanya diperlukan jika Anda menyiapkan dari awal tanpa clone.
-
-Jalankan semua perintah berikut dari dalam direktori `tubesabd/` di terminal WSL Ubuntu.
-
-### 4.1 `Dockerfile`
+Masih dari dalam direktori `bigdata-spark/`, clone repositori tugas besar kelompok 1:
 
 ```bash
-cat > Dockerfile << 'EOF'
-FROM jupyter/pyspark-notebook:spark-3.5.0
+# Pastikan masih di dalam bigdata-spark/
+pwd
+# Output: /mnt/c/Users/Muhammad Aqil/praktikum-abd/bigdata-spark
 
-# Gunakan root untuk instalasi sistem
-USER root
+# Clone isi tugas besar ke folder tubesabd/
+git clone https://github.com/MuhammadAqil1/tubesabd.git tubesabd-tmp
 
-ENV DEBIAN_FRONTEND=noninteractive
+# Salin notebook dan dataset ke dalam struktur bigdata-spark
+cp tubesabd-tmp/notebooks/*.ipynb tubesabd/notebooks/
+cp tubesabd-tmp/water_potability.csv tubesabd/data/
+cp tubesabd-tmp/scripts/run_pipeline.py tubesabd/scripts/
 
-# Install dependensi sistem tambahan
-RUN apt-get update && apt-get install -y \
-    curl \
-    wget \
-    net-tools \
-    && rm -rf /var/lib/apt/lists/*
-
-# Kembali ke user jovyan (default Jupyter)
-USER jovyan
-
-# Install library Python yang dibutuhkan
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-
-# Buat direktori kerja
-RUN mkdir -p /home/jovyan/work/notebooks \
-             /home/jovyan/work/output/figures \
-             /home/jovyan/work/output/model \
-             /home/jovyan/work/scripts \
-             /home/jovyan/work/data
-
-WORKDIR /home/jovyan/work
-
-EXPOSE 8888 4040
-EOF
+# Hapus folder temp
+rm -rf tubesabd-tmp
 ```
 
-### 4.2 `requirements.txt`
+Verifikasi struktur folder akhir:
 
 ```bash
-cat > requirements.txt << 'EOF'
-pandas==2.1.4
-matplotlib==3.8.2
-seaborn==0.13.2
-scikit-learn==1.3.2
-numpy==1.26.2
-plotly==5.18.0
-imbalanced-learn==0.11.0
-EOF
+ls -lh tubesabd/notebooks/
+ls -lh tubesabd/data/
 ```
 
-### 4.3 `docker-compose.yml`
+Struktur folder `bigdata-spark/` yang sudah lengkap:
 
-```bash
-cat > docker-compose.yml << 'EOF'
-version: "3.8"
-
-services:
-
-  # ── Jupyter + PySpark ────────────────────────────────────────
-  spark-jupyter:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: abedeh-spark-jupyter
-    ports:
-      - "8888:8888"    # Jupyter Lab / Notebook
-      - "4040:4040"    # Spark UI (job pertama)
-      - "4041:4041"    # Spark UI (job kedua, jika 4040 bentrok)
-    environment:
-      JUPYTER_ENABLE_LAB: "yes"
-      JUPYTER_TOKEN: "abedeh2024"
-      SPARK_OPTS: "--driver-java-options=-Xms1g --driver-java-options=-Xmx2g"
-    volumes:
-      # Mount folder proyek ke dalam kontainer
-      - ./notebooks:/home/jovyan/work/notebooks
-      - ./output:/home/jovyan/work/output
-      - ./scripts:/home/jovyan/work/scripts
-      - ./water_potability.csv:/home/jovyan/work/data/water_potability.csv
-    restart: unless-stopped
-    mem_limit: 4g
-    cpus: "2.0"
-
-volumes: {}
-
-networks:
-  default:
-    name: abedeh-net
-    driver: bridge
-EOF
+```
+bigdata-spark/                          ← root environment dosen
+├── Dockerfile                          ← image Hadoop + Spark (Ubuntu 24.04 + Java 8)
+├── bootstrap.sh                        ← inisialisasi environment saat kontainer start
+├── start.sh                            ← script menjalankan kontainer
+├── stop.sh                             ← script menghentikan kontainer
+├── login.sh                            ← script masuk ke kontainer
+├── core-site.xml                       ← konfigurasi HDFS
+├── hdfs-site.xml                       ← konfigurasi replikasi HDFS
+├── hadoop-env.sh                       ← environment Hadoop
+├── hadoop-3.4.1.tar.gz                 ← ⬅ diunduh manual (Langkah 5)
+├── spark-3.5.x-bin-hadoop3.tgz         ← ⬅ diunduh manual (Langkah 5)
+│
+└── tubesabd/                           ← direktori tugas besar kelompok 1
+    ├── data/
+    │   └── water_potability.csv        ← dataset (3.276 sampel)
+    ├── notebooks/
+    │   ├── 01_eda.ipynb
+    │   ├── 02_preprocessing.ipynb
+    │   ├── 03_modeling.ipynb
+    │   └── 04_visualisasi.ipynb
+    ├── output/
+    │   ├── figures/                    ← output gambar
+    │   └── model/                      ← model tersimpan
+    └── scripts/
+        └── run_pipeline.py
 ```
 
-Verifikasi semua file sudah terbuat:
+---
+
+## 5. Mengunduh Binary Hadoop & Spark
+
+> Hadoop dan Spark tidak disertakan di repositori karena ukurannya besar (~400 MB masing-masing).
+> Unduh manual menggunakan perintah berikut dari dalam direktori `bigdata-spark/`.
+
+### 5.1 Unduh Hadoop 3.4.1
 
 ```bash
-ls -lh
+# Pastikan masih di bigdata-spark/
+cd /mnt/c/Users/Muhammad\ Aqil/praktikum-abd/bigdata-spark
+
+wget https://downloads.apache.org/hadoop/common/hadoop-3.4.1/hadoop-3.4.1.tar.gz
+```
+
+> Jika `wget` gagal karena mirror tidak tersedia, coba link alternatif:
+> ```bash
+> wget https://archive.apache.org/dist/hadoop/common/hadoop-3.4.1/hadoop-3.4.1.tar.gz
+> ```
+
+### 5.2 Unduh Spark 3.5.3
+
+```bash
+wget https://downloads.apache.org/spark/spark-3.5.3/spark-3.5.3-bin-hadoop3.tgz
+```
+
+> Link alternatif jika gagal:
+> ```bash
+> wget https://archive.apache.org/dist/spark/spark-3.5.3/spark-3.5.3-bin-hadoop3.tgz
+> ```
+
+Verifikasi kedua file sudah ada:
+
+```bash
+ls -lh *.tar.gz *.tgz
 ```
 
 Output yang diharapkan:
 ```
--rw-r--r-- 1 ... Dockerfile
--rw-r--r-- 1 ... README.md
--rw-r--r-- 1 ... docker-compose.yml
--rw-r--r-- 1 ... requirements.txt
--rw-r--r-- 1 ... water_potability.csv
-drwxr-xr-x 2 ... notebooks/
-drwxr-xr-x 3 ... output/
-drwxr-xr-x 2 ... scripts/
+-rw-r--r-- 1 ... 697M ... hadoop-3.4.1.tar.gz
+-rw-r--r-- 1 ... 400M ... spark-3.5.3-bin-hadoop3.tgz
 ```
 
 ---
 
-## 5. Membangun Docker Image
+## 6. Membangun Docker Image
 
-> **Catatan:** Proses build pertama kali membutuhkan waktu **10–20 menit** karena
-> mengunduh base image Jupyter+Spark (~1.5 GB). Pastikan koneksi internet stabil.
-> Proses ini hanya dilakukan **sekali** — build berikutnya jauh lebih cepat.
-
-Jalankan dari terminal WSL Ubuntu di dalam direktori `tubesabd/`:
+> Proses build pertama kali membutuhkan waktu **15–30 menit** karena mengekstrak
+> Hadoop dan Spark dari tarball. Pastikan koneksi internet stabil dan RAM cukup.
 
 ```bash
-docker compose build
+bash build.sh
 ```
 
-Anda akan melihat progress seperti ini (normal):
-```
-[+] Building 45.2s (12/12) FINISHED
- => [internal] load build definition from Dockerfile
- => [internal] load .dockerignore
- => [1/5] FROM docker.io/jupyter/pyspark-notebook:spark-3.5.0
- => [2/5] RUN apt-get update ...
- => [3/5] COPY requirements.txt /tmp/requirements.txt
- => [4/5] RUN pip install --no-cache-dir -r /tmp/requirements.txt
- => [5/5] RUN mkdir -p /home/jovyan/work/...
- => exporting to image
+Atau secara manual:
+
+```bash
+docker build -t bigdata-spark .
 ```
 
 Verifikasi image berhasil dibuat:
 
 ```bash
-docker images | grep abedeh
+docker images | grep bigdata-spark
 ```
 
 Output yang diharapkan:
 ```
-REPOSITORY                        TAG       IMAGE ID       CREATED         SIZE
-tubesabd-spark-jupyter            latest    a1b2c3d4e5f6   1 minute ago    3.2GB
+REPOSITORY      TAG       IMAGE ID       CREATED         SIZE
+bigdata-spark   latest    xxxxxxxxxxxx   2 minutes ago   ~5GB
 ```
 
 ---
 
-## 6. Menjalankan Kontainer
+## 7. Menjalankan Kontainer
+
+Gunakan script bawaan dosen untuk menjalankan kontainer:
 
 ```bash
-# Jalankan kontainer di background (-d = detached mode)
-docker compose up -d
+bash start.sh
 ```
 
-Cek status kontainer (tunggu hingga status `running`):
+Script ini akan menjalankan kontainer dengan port-port berikut:
 
-```bash
-docker compose ps
-```
+| Port | Layanan |
+|---|---|
+| `9870` | HDFS NameNode Web UI |
+| `9866` | HDFS DataNode |
+| `8088` | YARN ResourceManager Web UI |
+| `9000` | HDFS RPC |
+| `8000` | Spark / Jupyter (jika aktif) |
 
-Output yang diharapkan:
-```
-NAME                    IMAGE                    COMMAND    SERVICE         STATUS    PORTS
-abedeh-spark-jupyter    tubesabd-spark-jupyter   ...        spark-jupyter   running   0.0.0.0:8888->8888/tcp, 0.0.0.0:4040->4040/tcp
-```
-
-Lihat log untuk memastikan Jupyter sudah siap:
-
-```bash
-docker compose logs spark-jupyter
-```
-
-Tunggu hingga muncul baris seperti ini (tanda kontainer siap):
-```
-[I 2024-xx-xx xx:xx:xx ServerApp] Jupyter Server is running at:
-[I 2024-xx-xx xx:xx:xx ServerApp] http://127.0.0.1:8888/lab?token=abedeh2024
-```
-
-Untuk melihat log secara real-time (tekan `Ctrl+C` untuk keluar dari log, **kontainer tetap berjalan**):
-
-```bash
-docker compose logs -f spark-jupyter
-```
-
----
-
-## 7. Verifikasi Kontainer & Layanan
-
-### 7.1 Cek Status Kontainer
+Cek apakah kontainer sudah berjalan:
 
 ```bash
 docker ps
@@ -364,220 +291,220 @@ docker ps
 
 Output yang diharapkan:
 ```
-CONTAINER ID   IMAGE                     STATUS         PORTS
-xxxxxxxxxxxx   tubesabd-spark-jupyter    Up 2 minutes   0.0.0.0:8888->8888/tcp
+CONTAINER ID   IMAGE           STATUS         NAMES
+xxxxxxxxxxxx   bigdata-spark   Up 1 minute    bigdata-spark
 ```
 
-### 7.2 Masuk ke Dalam Kontainer (Opsional)
+---
 
-Jika perlu menjalankan perintah langsung di dalam kontainer:
+## 8. Verifikasi Layanan Hadoop & HDFS
+
+Masuk ke dalam kontainer:
 
 ```bash
-docker exec -it abedeh-spark-jupyter bash
+bash login.sh
 ```
 
-Untuk keluar dari kontainer tanpa menghentikannya:
+Atau secara manual:
+
+```bash
+docker exec -it bigdata-spark bash
+```
+
+Di dalam kontainer, jalankan perintah berikut untuk memastikan semua layanan aktif:
+
+```bash
+# Cek status HDFS
+hdfs dfsadmin -report
+```
+
+Output yang diharapkan (sebagian):
+```
+Configured Capacity: ...
+Live datanodes (1): ...
+```
+
+```bash
+# Cek YARN
+yarn node -list
+```
+
+Output yang diharapkan:
+```
+Total Nodes:1
+         Node-Id             Node-State Node-Http-Address  ...
+localhost:xxxx          RUNNING localhost:8042             ...
+```
+
+```bash
+# Verifikasi Spark bisa berjalan
+spark-shell --version
+```
+
+Keluar dari kontainer:
 
 ```bash
 exit
 ```
 
-### 7.3 Verifikasi Dataset Tersedia di Dalam Kontainer
-
-```bash
-docker exec abedeh-spark-jupyter ls -lh /home/jovyan/work/data/
-```
-
-Output yang diharapkan:
-```
--rw-r--r-- 1 jovyan users 513K ... water_potability.csv
-```
-
-### 7.4 Verifikasi Python & PySpark Berfungsi
-
-```bash
-docker exec abedeh-spark-jupyter python3 -c "
-import pyspark
-print('PySpark version:', pyspark.__version__)
-print('PySpark OK!')
-"
-```
-
-Output yang diharapkan:
-```
-PySpark version: 3.5.0
-PySpark OK!
-```
-
 ---
 
-## 8. Mengakses Jupyter Lab & Spark UI
+## 9. Mengakses Web UI
 
 Buka browser dan akses layanan berikut:
 
-| Layanan | URL | Token / Login |
+| Layanan | URL | Keterangan |
 |---|---|---|
-| **Jupyter Lab** | http://localhost:8888 | Token: `abedeh2024` |
-| **Spark UI** | http://localhost:4040 | — (aktif saat SparkSession berjalan) |
-
-> **Catatan Spark UI:** Port 4040 hanya aktif **selama SparkSession berjalan** di dalam notebook.
-> Jika port 4040 sudah terpakai proses lain, Spark otomatis menggunakan port 4041.
-
-**Cara masuk ke Jupyter Lab:**
-1. Buka http://localhost:8888 di browser
-2. Ketik token: `abedeh2024` pada kolom Password / Token
-3. Klik **Log in**
-4. Anda akan masuk ke tampilan **Jupyter Lab**
+| **HDFS NameNode UI** | http://localhost:9870 | Melihat status HDFS dan file yang tersimpan |
+| **YARN ResourceManager** | http://localhost:8088 | Memonitor Spark jobs yang berjalan |
 
 ---
 
-## 9. Mengunggah Dataset ke Kontainer
+## 10. Persiapan Dataset di HDFS
 
-Dataset `water_potability.csv` sudah otomatis ter-mount ke dalam kontainer melalui konfigurasi `volumes` di `docker-compose.yml`. **Tidak perlu upload manual.**
-
-Verifikasi dari terminal Jupyter Lab (klik ikon `+` di panel kiri → **Terminal**):
+Salin dataset `water_potability.csv` ke dalam HDFS agar bisa dibaca oleh Spark:
 
 ```bash
-# Di dalam terminal Jupyter Lab
-ls -lh /home/jovyan/work/data/
+# Masuk ke kontainer
+bash login.sh
+
+# Buat direktori di HDFS
+hdfs dfs -mkdir -p /user/tubesabd/data
+
+# Salin dataset dari host ke dalam kontainer lalu ke HDFS
+# (dataset sudah ter-mount atau bisa disalin manual)
+hdfs dfs -put /tubesabd/data/water_potability.csv /user/tubesabd/data/
+
+# Verifikasi file berhasil masuk ke HDFS
+hdfs dfs -ls /user/tubesabd/data/
 ```
 
-Atau verifikasi langsung dari WSL Ubuntu:
+Output yang diharapkan:
+```
+Found 1 items
+-rw-r--r--   1 root supergroup     537810 ... /user/tubesabd/data/water_potability.csv
+```
 
 ```bash
-docker exec abedeh-spark-jupyter ls -lh /home/jovyan/work/data/
+# Keluar dari kontainer
+exit
 ```
+
+> **Catatan:** Jika dataset belum ada di dalam kontainer, salin terlebih dahulu dari WSL:
+> ```bash
+> docker cp tubesabd/data/water_potability.csv bigdata-spark:/tubesabd/data/
+> ```
 
 ---
 
-## 10. Menjalankan Notebook Analisis
+## 11. Menjalankan Notebook Analisis
 
-Buka Jupyter Lab di http://localhost:8888, lalu masuk ke folder `notebooks/` pada panel kiri. Jalankan notebook secara **berurutan dari atas ke bawah**:
+### 11.1 Jalankan Jupyter di Dalam Kontainer
 
-### Urutan Eksekusi Notebook
+```bash
+# Masuk ke dalam kontainer
+bash login.sh
+
+# Install Jupyter jika belum ada
+pip3 install jupyter notebook
+
+# Jalankan Jupyter Notebook (dari dalam kontainer)
+jupyter notebook --ip=0.0.0.0 --port=8000 --no-browser --allow-root \
+  --NotebookApp.token='abedeh2024' \
+  --notebook-dir=/tubesabd/notebooks/ &
+```
+
+Buka browser dan akses: **http://localhost:8000** dengan token `abedeh2024`
+
+### 11.2 Urutan Eksekusi Notebook
 
 | No | File Notebook | Isi | Estimasi Waktu |
 |---|---|---|---|
 | 1 | `01_eda.ipynb` | EDA, statistik deskriptif, heatmap korelasi, density plot | 5–10 menit |
 | 2 | `02_preprocessing.ipynb` | Imputasi NULL, normalisasi, split 80/20 | 3–5 menit |
-| 3 | `03_modeling.ipynb` | Training Random Forest, evaluasi, confusion matrix, feature importance | 10–15 menit |
+| 3 | `03_modeling.ipynb` | Training Random Forest, evaluasi, confusion matrix | 10–15 menit |
 | 4 | `04_visualisasi.ipynb` | Perbandingan baseline, tabel metrik, kesimpulan | 10–15 menit |
 
-> **Penting:** Jalankan setiap cell dari **atas ke bawah** menggunakan `Shift+Enter`
-> atau klik tombol **▶ Run All** di menu atas. Jangan lewati cell manapun.
+> Jalankan setiap cell dari **atas ke bawah** menggunakan `Shift+Enter`.
 
-### Cara Membuka dan Menjalankan Notebook
-
-1. Di panel kiri Jupyter Lab, klik folder **`notebooks/`**
-2. Double-klik `01_eda.ipynb` untuk membukanya
-3. Klik menu **Run** → **Run All Cells**
-4. Tunggu semua cell selesai (tanda: nomor di `[ ]` sudah terisi, bukan `[*]`)
-5. Setelah selesai, ulangi untuk notebook berikutnya
-
-### Memonitor Spark Jobs (Opsional)
-
-Saat notebook sedang berjalan (setelah `SparkSession` dibuat), buka:
-- **http://localhost:4040** → tab **Jobs** untuk melihat progress
-- Tab **SQL** untuk query yang sedang dieksekusi
-- Tab **Executors** untuk monitoring resource
-
-### Menjalankan Pipeline Sekaligus (Alternatif)
-
-Jika ingin menjalankan seluruh pipeline tanpa membuka notebook satu per satu:
+### 11.3 Alternatif: Jalankan Pipeline Langsung (Tanpa Notebook)
 
 ```bash
-# Masuk ke dalam kontainer
-docker exec -it abedeh-spark-jupyter bash
+# Masuk ke kontainer
+bash login.sh
 
-# Jalankan skrip pipeline lengkap
-python3 /home/jovyan/work/scripts/run_pipeline.py
+# Jalankan pipeline lengkap dengan spark-submit
+spark-submit /tubesabd/scripts/run_pipeline.py
 
 # Keluar dari kontainer
 exit
 ```
 
-### Melihat Hasil Output
+### 11.4 Monitoring Spark Jobs
 
-Semua gambar output tersimpan otomatis di folder `output/figures/` yang dapat diakses langsung dari Windows Explorer:
+Saat pipeline/notebook berjalan, pantau di:
+- **YARN UI:** http://localhost:8088 → klik **Applications** → lihat job yang aktif
+- **Spark UI:** Klik link **ApplicationMaster** di YARN UI → tampil Spark UI dengan detail stage
 
+---
+
+## 12. Menghentikan Kontainer
+
+```bash
+bash stop.sh
 ```
-C:\Users\Muhammad Aqil\tubesabd-kerja\tubesabd\output\figures\
-├── distribusi_label.png       ← distribusi kelas potabilitas
-├── heatmap_korelasi.png       ← heatmap korelasi fitur
-├── distribusi_fitur.png       ← density plot per fitur
-├── confusion_matrix.png       ← confusion matrix hasil prediksi
-├── feature_importance.png     ← bar chart feature importance
-└── perbandingan_model.png     ← perbandingan semua model
+
+Atau secara manual:
+
+```bash
+docker stop bigdata-spark
+```
+
+> Semua file di folder `tubesabd/` di host WSL tetap aman — tidak terhapus saat kontainer dihentikan.
+
+Untuk menjalankan kembali:
+
+```bash
+bash start.sh
 ```
 
 ---
 
-## 11. Menghentikan Kontainer
+## 13. Checklist Sebelum Pengumpulan
 
-Setelah selesai bekerja, hentikan kontainer dengan perintah berikut dari terminal WSL Ubuntu:
-
-```bash
-# Hentikan kontainer (semua file notebook & output tetap tersimpan)
-docker compose down
-```
-
-Output yang diharapkan:
-```
-[+] Running 2/2
- ✔ Container abedeh-spark-jupyter  Removed
- ✔ Network abedeh-net              Removed
-```
-
-> **Catatan:** Perintah `docker compose down` **tidak** menghapus file Anda.
-> Semua notebook dan output di folder `notebooks/` dan `output/` tetap aman.
-
-Untuk menjalankan kembali di lain waktu, cukup:
-
-```bash
-# Masuk ke direktori proyek
-cd /mnt/c/Users/Muhammad\ Aqil/tubesabd-kerja/tubesabd
-
-# Jalankan kembali (tidak perlu build ulang)
-docker compose up -d
-```
-
----
-
-## 12. Checklist Sebelum Pengumpulan
-
-Pastikan semua item berikut terpenuhi sebelum mengumpulkan tugas:
+**Environment & Setup:**
+- [ ] `bigdata-spark` berhasil di-clone dan build
+- [ ] Hadoop HDFS aktif (`hdfs dfsadmin -report` menampilkan 1 datanode)
+- [ ] YARN aktif (`yarn node -list` menampilkan 1 node)
+- [ ] Dataset `water_potability.csv` tersedia di HDFS: `/user/tubesabd/data/`
 
 **Notebook & Kode:**
-- [ ] `01_eda.ipynb` sudah dijalankan dari awal hingga akhir tanpa error
-- [ ] `02_preprocessing.ipynb` sudah dijalankan dari awal hingga akhir tanpa error
-- [ ] `03_modeling.ipynb` sudah dijalankan dari awal hingga akhir tanpa error
-- [ ] `04_visualisasi.ipynb` sudah dijalankan dari awal hingga akhir tanpa error
-- [ ] Semua cell output masih tampil (jangan *Clear Output* sebelum dikumpulkan)
+- [ ] `01_eda.ipynb` dijalankan tanpa error, output tampil
+- [ ] `02_preprocessing.ipynb` dijalankan tanpa error, output tampil
+- [ ] `03_modeling.ipynb` dijalankan tanpa error, output tampil
+- [ ] `04_visualisasi.ipynb` dijalankan tanpa error, output tampil
+- [ ] **Jangan** hapus output cell sebelum dikumpulkan
 
 **Output & Visualisasi:**
-- [ ] `output/figures/heatmap_korelasi.png` tersedia
-- [ ] `output/figures/distribusi_fitur.png` tersedia
-- [ ] `output/figures/confusion_matrix.png` tersedia
-- [ ] `output/figures/feature_importance.png` tersedia
-- [ ] `output/figures/perbandingan_model.png` tersedia
+- [ ] `output/figures/heatmap_korelasi.png` ada
+- [ ] `output/figures/confusion_matrix.png` ada
+- [ ] `output/figures/feature_importance.png` ada
+- [ ] `output/figures/perbandingan_model.png` ada
 
 **Evaluasi Model:**
-- [ ] Metrik Accuracy, F1-Score, Precision, Recall sudah tercetak di Notebook 3
-- [ ] Feature importance sudah dianalisis dan diinterpretasikan
-- [ ] Perbandingan dengan model baseline (Decision Tree, Logistic Regression) sudah dilakukan di Notebook 4
+- [ ] Accuracy, F1-Score, Precision, Recall tercetak di Notebook 3
+- [ ] Feature importance dianalisis dan diinterpretasikan
+- [ ] Perbandingan dengan baseline (Decision Tree, Logistic Regression) ada di Notebook 4
 
 **Repositori GitHub:**
-- [ ] Semua file sudah ter-push ke https://github.com/MuhammadAqil1/tubesabd
-- [ ] `water_potability.csv` tersedia di repo
-- [ ] `README.md` ini dapat dibaca dengan jelas
+- [ ] Semua notebook terbaru ter-push ke https://github.com/MuhammadAqil1/tubesabd
 
 ---
 
 ## Referensi
 
+- [Repositori Lingkungan Dosen (bigdata-spark)](https://github.com/sains-data/bigdata-spark)
+- [Repositori Praktikum ABD](https://github.com/sains-data/praktikum-analaisis-big-data)
 - [Apache Spark MLlib Documentation](https://spark.apache.org/docs/latest/ml-guide.html)
-- [PySpark API Reference](https://spark.apache.org/docs/latest/api/python/)
-- [Jupyter PySpark Docker Image](https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-pyspark-notebook)
 - [Water Quality Dataset — Kaggle](https://www.kaggle.com/datasets/adityakadiwal/water-potability)
 - Alomani et al. (2022). *Prediction of Quality of Water According to a Random Forest Classifier.* IJACSA, vol. 13, no. 6, pp. 892–899.
-- Fatristya et al. (2025). *Peran Air Bersih dan Sanitasi dalam Meningkatkan Kualitas Hidup.* GeoScienceEd, vol. 6, no. 1.
