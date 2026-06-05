@@ -1,0 +1,85 @@
+{
+  "layer": "Silver",
+  "description": "Data setelah imputasi mean, penghapusan duplikat, dan validasi kelengkapan",
+  "total_rows": 3276,
+  "total_columns": 10,
+  "duplicates_removed": 0,
+  "imputation_applied": {
+    "ph": 7.0808,
+    "Sulfate": 333.7758,
+    "Trihalomethanes": 66.3963
+  },
+  "missing_after": {
+    "ph": 0,
+    "Hardness": 0,
+    "Solids": 0,
+    "Chloramines": 0,
+    "Sulfate": 0,
+    "Conductivity": 0,
+    "Organic_carbon": 0,
+    "Trihalomethanes": 0,
+    "Turbidity": 0,
+    "Potability": 0
+  },
+  "label_distribution": {
+    "Tidak Layak (0)": 1998,
+    "Layak (1)": 1278
+  },
+  "feature_stats": {
+    "ph": {
+      "mean": 7.0808,
+      "std": 1.47,
+      "min": 0.0,
+      "max": 14.0
+    },
+    "Hardness": {
+      "mean": 196.3695,
+      "std": 32.8798,
+      "min": 47.432,
+      "max": 323.124
+    },
+    "Solids": {
+      "mean": 22014.0925,
+      "std": 8768.5708,
+      "min": 320.9426,
+      "max": 61227.196
+    },
+    "Chloramines": {
+      "mean": 7.1223,
+      "std": 1.5831,
+      "min": 0.352,
+      "max": 13.127
+    },
+    "Sulfate": {
+      "mean": 333.7758,
+      "std": 36.1426,
+      "min": 129.0,
+      "max": 481.0306
+    },
+    "Conductivity": {
+      "mean": 426.2051,
+      "std": 80.8241,
+      "min": 181.4838,
+      "max": 753.3426
+    },
+    "Organic_carbon": {
+      "mean": 14.285,
+      "std": 3.3082,
+      "min": 2.2,
+      "max": 28.3
+    },
+    "Trihalomethanes": {
+      "mean": 66.3963,
+      "std": 15.7699,
+      "min": 0.738,
+      "max": 124.0
+    },
+    "Turbidity": {
+      "mean": 3.9668,
+      "std": 0.7804,
+      "min": 1.45,
+      "max": 6.739
+    }
+  },
+  "timestamp": "2026-06-05 13:30:17"
+}

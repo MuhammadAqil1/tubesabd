@@ -1,0 +1,72 @@
+{
+  "layer": "Gold",
+  "description": "Hasil akhir analitik: evaluasi model, feature importance, dan prediksi",
+  "best_model": "Random Forest",
+  "test_size": 601,
+  "train_size": 2675,
+  "metrics": {
+    "accuracy": 0.6556,
+    "f1_score": 0.6051,
+    "precision": 0.6377,
+    "recall": 0.6556,
+    "auc_roc": 0.6583
+  },
+  "confusion_matrix": {
+    "TN": 344,
+    "FP": 35,
+    "FN": 172,
+    "TP": 50
+  },
+  "feature_importance": {
+    "ph": 0.1629,
+    "Sulfate": 0.1581,
+    "Chloramines": 0.1151,
+    "Hardness": 0.1055,
+    "Solids": 0.0964,
+    "Organic_carbon": 0.0959,
+    "Conductivity": 0.0898,
+    "Trihalomethanes": 0.089,
+    "Turbidity": 0.0873
+  },
+  "model_comparison": [
+    {
+      "Model": "Random Forest",
+      "Accuracy": 0.6556,
+      "F1_Score": 0.6051,
+      "Precision": 0.6377,
+      "Recall": 0.6556,
+      "AUC_ROC": 0.6583
+    },
+    {
+      "Model": "Decision Tree",
+      "Accuracy": 0.6206,
+      "F1_Score": 0.5987,
+      "Precision": 0.5971,
+      "Recall": 0.6206,
+      "AUC_ROC": 0.4917
+    },
+    {
+      "Model": "Logistic Regression",
+      "Accuracy": 0.6323,
+      "F1_Score": 0.4916,
+      "Precision": 0.7677,
+      "Recall": 0.6323,
+      "AUC_ROC": 0.5094
+    },
+    {
+      "Model": "Gradient Boosting",
+      "Accuracy": 0.6539,
+      "F1_Score": 0.6316,
+      "Precision": 0.6354,
+      "Recall": 0.6539,
+      "AUC_ROC": 0.639
+    }
+  ],
+  "hyperparameters": {
+    "num_trees": 100,
+    "max_depth": 10,
+    "seed": 42,
+    "feature_subset_strategy": "sqrt"
+  },
+  "timestamp": "2026-06-05 13:31:27"
+}

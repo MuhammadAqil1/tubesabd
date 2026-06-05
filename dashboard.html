@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard ABD - Prediksi Potabilitas Air | Kelompok 1</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary:   #0d1117;
+    --bg-card:      #161b22;
+    --bg-card2:     #1c2128;
+    --border:       #30363d;
+    --text-primary: #e6edf3;
+    --text-muted:   #8b949e;
+    --bronze:       #cd7f32;
+    --bronze-bg:    rgba(205,127,50,0.12);
+    --silver:       #a8b2c1;
+    --silver-bg:    rgba(168,178,193,0.12);
+    --gold:         #ffd700;
+    --gold-bg:      rgba(255,215,0,0.12);
+    --accent:       #2f81f7;
+    --accent-bg:    rgba(47,129,247,0.12);
+    --green:        #3fb950;
+    --red:          #f85149;
+    --orange:       #d29922;
+    --purple:       #bc8cff;
+    --radius:       12px;
+    --radius-lg:    16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 0 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(47,129,247,0.08) 0%, transparent 70%);
+  }
+  .badge {
+    display: inline-block;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #e6edf3 0%, #2f81f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .header-meta {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-chip {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .meta-chip span { color: var(--text-primary); font-weight: 600; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+  .section { padding: 40px 0; }
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  /* ── CARDS ── */
+  .grid { display: grid; gap: 16px; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  @media(max-width:900px){ .grid-3,.grid-4,.grid-2{ grid-template-columns:1fr; } }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: #484f58; transform: translateY(-2px); }
+
+  /* ── MEDALLION LAYERS ── */
+  .layer-bronze { border-color: var(--bronze); background: var(--bronze-bg); }
+  .layer-silver { border-color: var(--silver); background: var(--silver-bg); }
+  .layer-gold   { border-color: var(--gold);   background: var(--gold-bg);   }
+
+  .layer-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .layer-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .layer-icon.bronze { background: rgba(205,127,50,0.2); }
+  .layer-icon.silver { background: rgba(168,178,193,0.2); }
+  .layer-icon.gold   { background: rgba(255,215,0,0.2);   }
+
+  .layer-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .layer-label.bronze { color: var(--bronze); }
+  .layer-label.silver { color: var(--silver); }
+  .layer-label.gold   { color: var(--gold);   }
+
+  .layer-name { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); }
+
+  .stat-row { display: flex; justify-content: space-between; padding: 8px 0;
+              border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--text-muted); }
+  .stat-value { font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+  .stat-value.warn { color: var(--orange); }
+  .stat-value.ok   { color: var(--green);  }
+  .stat-value.info { color: var(--accent); }
+
+  /* ── METRIC CARDS ── */
+  .metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .metric-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .metric-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .metric-name { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .metric-sub  { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── PIPELINE ARROW ── */
+  .pipeline-flow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .pipeline-step {
+    display: flex; flex-direction: column;
+    align-items: center; padding: 14px 24px;
+    border-radius: 10px;
+    min-width: 140px; text-align: center;
+  }
+  .step-bronze { background: var(--bronze-bg); border: 1.5px solid var(--bronze); }
+  .step-silver { background: var(--silver-bg); border: 1.5px solid var(--silver); }
+  .step-gold   { background: var(--gold-bg);   border: 1.5px solid var(--gold);   }
+  .step-emoji  { font-size: 1.8rem; margin-bottom: 4px; }
+  .step-label  { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .step-desc   { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .pipeline-arrow { font-size: 1.4rem; color: var(--text-muted); padding: 0 8px; }
+
+  /* ── CHARTS ── */
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+  }
+  .chart-title { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+  .chart-wrap  { position: relative; height: 300px; }
+  .chart-wrap-sm { position: relative; height: 240px; }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  thead th {
+    background: var(--bg-card2);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-card2); }
+  tbody td { padding: 12px 16px; }
+  .best-row { background: rgba(47,129,247,0.06); }
+  .tag {
+    display: inline-block; padding: 2px 10px;
+    border-radius: 12px; font-size: 0.75rem; font-weight: 600;
+  }
+  .tag-best { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent); }
+
+  /* ── CONFUSION MATRIX ── */
+  .cm-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; max-width: 360px; margin: 0 auto;
+  }
+  .cm-cell {
+    border-radius: 10px; padding: 20px;
+    text-align: center; font-family: 'JetBrains Mono', monospace;
+  }
+  .cm-tp { background: rgba(63,185,80,0.2); border: 1.5px solid var(--green); }
+  .cm-tn { background: rgba(63,185,80,0.2); border: 1.5px solid var(--green); }
+  .cm-fp { background: rgba(248,81,73,0.2);  border: 1.5px solid var(--red);   }
+  .cm-fn { background: rgba(248,81,73,0.2);  border: 1.5px solid var(--red);   }
+  .cm-num  { font-size: 2rem; font-weight: 800; }
+  .cm-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+  .cm-tp .cm-num, .cm-tn .cm-num { color: var(--green); }
+  .cm-fp .cm-num, .cm-fn .cm-num { color: var(--red);   }
+
+  /* ── IMAGE GRID ── */
+  .img-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .img-card:hover { border-color: #484f58; transform: translateY(-2px); }
+  .img-card img { width: 100%; display: block; }
+  .img-caption {
+    padding: 12px 16px;
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 20px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="container">
+    <div class="badge">Tugas Besar ABD · Kelompok 1</div>
+    <h1>Dashboard Prediksi Potabilitas Air Sungai</h1>
+    <p>Analisis berbasis <strong>Apache Spark MLlib</strong> dengan arsitektur Medallion (Bronze → Silver → Gold) menggunakan algoritma Random Forest</p>
+    <div class="header-meta">
+      <div class="meta-chip">Dataset: <span>water_potability.csv</span></div>
+      <div class="meta-chip">Rows: <span>3,276</span></div>
+      <div class="meta-chip">Algorithm: <span>Random Forest</span></div>
+      <div class="meta-chip">PySpark: <span>3.5.0</span></div>
+      <div class="meta-chip">Generated: <span>2026-06-05 13:31</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- MEDALLION PIPELINE FLOW -->
+<div class="container">
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(47,129,247,0.15);">🏗️</div>
+      Medallion Architecture Pipeline
+    </div>
+    <div class="pipeline-flow">
+      <div class="pipeline-step step-bronze">
+        <div class="step-emoji">🥉</div>
+        <div class="step-label" style="color:var(--bronze)">Bronze</div>
+        <div class="step-desc">Raw Data<br>3,276 baris</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step step-silver">
+        <div class="step-emoji">🥈</div>
+        <div class="step-label" style="color:var(--silver)">Silver</div>
+        <div class="step-desc">Clean Data<br>Imputasi + Dedup</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step step-gold">
+        <div class="step-emoji">🥇</div>
+        <div class="step-label" style="color:var(--gold)">Gold</div>
+        <div class="step-desc">Analitik Final<br>Model + Evaluasi</div>
+      </div>
+    </div>
+
+    <!-- LAYER CARDS -->
+    <div class="grid grid-3">
+
+      <!-- BRONZE -->
+      <div class="card layer-bronze">
+        <div class="layer-header">
+          <div class="layer-icon bronze">🥉</div>
+          <div>
+            <div class="layer-label bronze">Bronze Layer</div>
+            <div class="layer-name">Raw Data</div>
+          </div>
+        </div>
+        <div class="stat-row"><span class="stat-label">Total Baris</span>
+          <span class="stat-value info">3,276</span></div>
+        <div class="stat-row"><span class="stat-label">Total Kolom</span>
+          <span class="stat-value info">10</span></div>
+        <div class="stat-row"><span class="stat-label">Missing: ph</span>
+          <span class="stat-value warn">491 (15.0%)</span></div>
+        <div class="stat-row"><span class="stat-label">Missing: Sulfate</span>
+          <span class="stat-value warn">781 (23.8%)</span></div>
+        <div class="stat-row"><span class="stat-label">Missing: THMs</span>
+          <span class="stat-value warn">162 (4.9%)</span></div>
+        <div class="stat-row"><span class="stat-label">Duplikat</span>
+          <span class="stat-value ok">0</span></div>
+        <div class="stat-row"><span class="stat-label">File</span>
+          <span class="stat-value info">bronze_raw.csv</span></div>
+      </div>
+
+      <!-- SILVER -->
+      <div class="card layer-silver">
+        <div class="layer-header">
+          <div class="layer-icon silver">🥈</div>
+          <div>
+            <div class="layer-label silver">Silver Layer</div>
+            <div class="layer-name">Clean Data</div>
+          </div>
+        </div>
+        <div class="stat-row"><span class="stat-label">Total Baris</span>
+          <span class="stat-value info">3,276</span></div>
+        <div class="stat-row"><span class="stat-label">Duplikat Dihapus</span>
+          <span class="stat-value ok">0</span></div>
+        <div class="stat-row"><span class="stat-label">Imputasi ph</span>
+          <span class="stat-value ok">mean = 7.0808</span></div>
+        <div class="stat-row"><span class="stat-label">Imputasi Sulfate</span>
+          <span class="stat-value ok">mean = 333.7758</span></div>
+        <div class="stat-row"><span class="stat-label">Imputasi THMs</span>
+          <span class="stat-value ok">mean = 66.3963</span></div>
+        <div class="stat-row"><span class="stat-label">Missing Setelah</span>
+          <span class="stat-value ok">0</span></div>
+        <div class="stat-row"><span class="stat-label">File</span>
+          <span class="stat-value info">silver_clean.csv</span></div>
+      </div>
+
+      <!-- GOLD -->
+      <div class="card layer-gold">
+        <div class="layer-header">
+          <div class="layer-icon gold">🥇</div>
+          <div>
+            <div class="layer-label gold">Gold Layer</div>
+            <div class="layer-name">Analitik Final</div>
+          </div>
+        </div>
+        <div class="stat-row"><span class="stat-label">Model Terbaik</span>
+          <span class="stat-value info">Random Forest</span></div>
+        <div class="stat-row"><span class="stat-label">Accuracy</span>
+          <span class="stat-value ok">0.6556 (65.56%)</span></div>
+        <div class="stat-row"><span class="stat-label">F1-Score</span>
+          <span class="stat-value ok">0.6051 (60.51%)</span></div>
+        <div class="stat-row"><span class="stat-label">Precision</span>
+          <span class="stat-value ok">0.6377 (63.77%)</span></div>
+        <div class="stat-row"><span class="stat-label">Recall</span>
+          <span class="stat-value ok">0.6556 (65.56%)</span></div>
+        <div class="stat-row"><span class="stat-label">AUC-ROC</span>
+          <span class="stat-value ok">0.6583 (65.83%)</span></div>
+        <div class="stat-row"><span class="stat-label">Files</span>
+          <span class="stat-value info">metrics.json + CSVs</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY METRICS -->
+  <div class="section" style="padding-top:0">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(63,185,80,0.15);">📈</div>
+      Hasil Evaluasi Model (Random Forest)
+    </div>
+    <div class="grid grid-4">
+      <div class="metric-card">
+        <div class="metric-value">65.6%</div>
+        <div class="metric-name">Accuracy</div>
+        <div class="metric-sub">601 test samples</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">60.5%</div>
+        <div class="metric-name">F1-Score</div>
+        <div class="metric-sub">Weighted average</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">63.8%</div>
+        <div class="metric-name">Precision</div>
+        <div class="metric-sub">Weighted average</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">65.8%</div>
+        <div class="metric-name">AUC-ROC</div>
+        <div class="metric-sub">Binary classification</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="section" style="padding-top:0">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(188,140,255,0.15);">📊</div>
+      Visualisasi Model
+    </div>
+    <div class="grid grid-2">
+      <div class="chart-card">
+        <div class="chart-title">Feature Importance — Random Forest</div>
+        <div class="chart-wrap"><canvas id="chartFeat"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Perbandingan Model — Accuracy & F1-Score</div>
+        <div class="chart-wrap"><canvas id="chartCompare"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFUSION MATRIX + RADAR -->
+  <div class="section" style="padding-top:0">
+    <div class="grid grid-2">
+      <div class="chart-card">
+        <div class="chart-title">Confusion Matrix — Random Forest</div>
+        <div style="padding:16px 0">
+          <div style="text-align:center;margin-bottom:12px;font-size:0.8rem;color:var(--text-muted)">
+            Prediksi ↓ &nbsp;|&nbsp; Aktual →
+          </div>
+          <div class="cm-grid">
+            <div class="cm-cell cm-tn">
+              <div class="cm-num">344</div>
+              <div class="cm-label">True Negative<br>(TN)</div>
+            </div>
+            <div class="cm-cell cm-fp">
+              <div class="cm-num">35</div>
+              <div class="cm-label">False Positive<br>(FP)</div>
+            </div>
+            <div class="cm-cell cm-fn">
+              <div class="cm-num">172</div>
+              <div class="cm-label">False Negative<br>(FN)</div>
+            </div>
+            <div class="cm-cell cm-tp">
+              <div class="cm-num">50</div>
+              <div class="cm-label">True Positive<br>(TP)</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:16px;display:flex;justify-content:center;gap:32px;font-size:0.83rem">
+          <div style="text-align:center">
+            <div style="color:var(--green);font-weight:700;font-size:1.1rem">65.6%</div>
+            <div style="color:var(--text-muted)">Benar</div>
+          </div>
+          <div style="text-align:center">
+            <div style="color:var(--red);font-weight:700;font-size:1.1rem">34.4%</div>
+            <div style="color:var(--text-muted)">Salah</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Radar Chart — Semua Metrik per Model</div>
+        <div class="chart-wrap"><canvas id="chartRadar"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE PERBANDINGAN -->
+  <div class="section" style="padding-top:0">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(210,153,34,0.15);">🏆</div>
+      Tabel Perbandingan Model
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th><th>Accuracy</th><th>F1-Score</th>
+            <th>Precision</th><th>Recall</th><th>AUC-ROC</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="best-row">
+            <td><strong>Random Forest</strong></td>
+            <td>65.56%</td>
+            <td>60.51%</td>
+            <td>63.77%</td>
+            <td>65.56%</td>
+            <td>65.83%</td>
+            <td><span class="tag tag-best">&#9733; Terbaik</span></td>
+          </tr>
+          <tr>
+            <td><strong>Decision Tree</strong></td>
+            <td>62.06%</td>
+            <td>59.87%</td>
+            <td>59.71%</td>
+            <td>62.06%</td>
+            <td>49.17%</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>Logistic Regression</strong></td>
+            <td>63.23%</td>
+            <td>49.16%</td>
+            <td>76.77%</td>
+            <td>63.23%</td>
+            <td>50.94%</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>Gradient Boosting</strong></td>
+            <td>65.39%</td>
+            <td>63.16%</td>
+            <td>63.54%</td>
+            <td>65.39%</td>
+            <td>63.90%</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VISUALISASI PNG -->
+  <div class="section" style="padding-top:0">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(47,129,247,0.15);">🖼️</div>
+      Visualisasi EDA & Hasil Analisis
+    </div>
+    <div class="grid grid-2">
+      <div class="img-card">
+        <img src="output/figures/medallion_architecture.png" alt="Medallion Architecture" loading="lazy">
+        <div class="img-caption">Arsitektur Medallion Pipeline</div>
+      </div>
+      <div class="img-card">
+        <img src="output/figures/heatmap_korelasi.png" alt="Heatmap Korelasi" loading="lazy">
+        <div class="img-caption">Heatmap Korelasi Antar Fitur</div>
+      </div>
+      <div class="img-card">
+        <img src="output/figures/distribusi_label.png" alt="Distribusi Label" loading="lazy">
+        <div class="img-caption">Distribusi Kelas Potabilitas (Bronze Layer)</div>
+      </div>
+      <div class="img-card">
+        <img src="output/figures/distribusi_fitur.png" alt="Distribusi Fitur" loading="lazy">
+        <div class="img-caption">Distribusi Fitur per Kelas (Bronze → Silver)</div>
+      </div>
+      <div class="img-card">
+        <img src="output/figures/silver_boxplot.png" alt="Silver Boxplot" loading="lazy">
+        <div class="img-caption">Boxplot Fitur Setelah Cleaning (Silver Layer)</div>
+      </div>
+      <div class="img-card">
+        <img src="output/figures/confusion_matrix.png" alt="Confusion Matrix" loading="lazy">
+        <div class="img-caption">Confusion Matrix — Random Forest (Gold Layer)</div>
+      </div>
+      <div class="img-card">
+        <img src="output/figures/feature_importance.png" alt="Feature Importance" loading="lazy">
+        <div class="img-caption">Feature Importance — Random Forest</div>
+      </div>
+      <div class="img-card">
+        <img src="output/figures/perbandingan_model.png" alt="Perbandingan Model" loading="lazy">
+        <div class="img-caption">Perbandingan Performa Semua Model</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p><strong>Tugas Besar Analisis Big Data — Kelompok 1</strong></p>
+    <p style="margin-top:6px">
+      Dataset: <a href="https://www.kaggle.com/datasets/adityakadiwal/water-potability" target="_blank">Water Potability (Kaggle)</a>
+      &nbsp;·&nbsp;
+      Repo: <a href="https://github.com/MuhammadAqil1/tubesabd" target="_blank">github.com/MuhammadAqil1/tubesabd</a>
+    </p>
+    <p style="margin-top:6px;color:#484f58">Generated with PySpark 3.5.0 · 2026-06-05 13:31:29</p>
+  </div>
+</div>
+
+<!-- CHART.JS SCRIPTS -->
+<script>
+const chartDefaults = {
+  color: '#8b949e',
+  plugins: { legend: { labels: { color: '#8b949e', font: { family: 'Inter' } } } },
+  scales: {
+    x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
+    y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } }
+  }
+};
+
+// Feature Importance
+new Chart(document.getElementById('chartFeat'), {
+  type: 'bar',
+  data: {
+    labels: ["ph", "Sulfate", "Chloramines", "Hardness", "Solids", "Organic_carbon", "Conductivity", "Trihalomethanes", "Turbidity"],
+    datasets: [{
+      label: 'Importance (%)',
+      data: [16.29, 15.81, 11.51, 10.55, 9.64, 9.59, 8.98, 8.9, 8.73],
+      backgroundColor: [
+        '#2f81f7','#3fb950','#f85149','#d29922','#bc8cff',
+        '#ff7b72','#79c0ff','#56d364','#ffa657'
+      ],
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color:'#8b949e', callback: v => v+'%' }, grid: { color:'#21262d' } },
+      y: { ticks: { color:'#8b949e' }, grid: { color:'#21262d' } }
+    }
+  }
+});
+
+// Model Comparison
+new Chart(document.getElementById('chartCompare'), {
+  type: 'bar',
+  data: {
+    labels: ["Random Forest", "Decision Tree", "Logistic Regression", "Gradient Boosting"],
+    datasets: [
+      { label: 'Accuracy (%)',  data: [65.56, 62.06, 63.23, 65.39], backgroundColor: '#2f81f7', borderRadius: 5 },
+      { label: 'F1-Score (%)', data: [60.51, 59.87, 49.16, 63.16],  backgroundColor: '#3fb950', borderRadius: 5 },
+      { label: 'Precision (%)',data: [63.77, 59.71, 76.77, 63.54], backgroundColor: '#bc8cff', borderRadius: 5 },
+      { label: 'Recall (%)',   data: [65.56, 62.06, 63.23, 65.39], backgroundColor: '#d29922', borderRadius: 5 },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color:'#8b949e', font:{ family:'Inter' } } },
+      annotation: {}
+    },
+    scales: {
+      x: { ticks:{color:'#8b949e'}, grid:{color:'#21262d'} },
+      y: { min:40, max:85, ticks:{color:'#8b949e', callback: v=>v+'%'}, grid:{color:'#21262d'} }
+    }
+  }
+});
+
+// Radar Chart
+new Chart(document.getElementById('chartRadar'), {
+  type: 'radar',
+  data: {
+    labels: ['Accuracy','F1-Score','Precision','Recall','AUC-ROC'],
+    datasets: [{"label": "Random Forest", "data": [65.6, 60.5, 63.8, 65.6, 65.8], "borderColor": "#2f81f7", "backgroundColor": "#2f81f722", "pointBackgroundColor": "#2f81f7", "borderWidth": 2}, {"label": "Decision Tree", "data": [62.1, 59.9, 59.7, 62.1, 49.2], "borderColor": "#f85149", "backgroundColor": "#f8514922", "pointBackgroundColor": "#f85149", "borderWidth": 2}, {"label": "Logistic Regression", "data": [63.2, 49.2, 76.8, 63.2, 50.9], "borderColor": "#3fb950", "backgroundColor": "#3fb95022", "pointBackgroundColor": "#3fb950", "borderWidth": 2}, {"label": "Gradient Boosting", "data": [65.4, 63.2, 63.5, 65.4, 63.9], "borderColor": "#d29922", "backgroundColor": "#d2992222", "pointBackgroundColor": "#d29922", "borderWidth": 2}]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color:'#8b949e', font:{family:'Inter'} } } },
+    scales: {
+      r: {
+        min: 40, max: 85,
+        ticks: { color:'#8b949e', backdropColor:'transparent', stepSize:10 },
+        grid: { color:'#30363d' },
+        pointLabels: { color:'#8b949e', font:{family:'Inter', size:11} }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

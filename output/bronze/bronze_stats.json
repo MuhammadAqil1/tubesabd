@@ -1,0 +1,48 @@
+{
+  "layer": "Bronze",
+  "description": "Raw data langsung dari sumber (Kaggle) tanpa perubahan apapun",
+  "total_rows": 3276,
+  "total_columns": 10,
+  "columns": [
+    "ph",
+    "Hardness",
+    "Solids",
+    "Chloramines",
+    "Sulfate",
+    "Conductivity",
+    "Organic_carbon",
+    "Trihalomethanes",
+    "Turbidity",
+    "Potability"
+  ],
+  "missing_values": {
+    "ph": 491,
+    "Hardness": 0,
+    "Solids": 0,
+    "Chloramines": 0,
+    "Sulfate": 781,
+    "Conductivity": 0,
+    "Organic_carbon": 0,
+    "Trihalomethanes": 162,
+    "Turbidity": 0,
+    "Potability": 0
+  },
+  "missing_pct": {
+    "ph": 14.99,
+    "Hardness": 0.0,
+    "Solids": 0.0,
+    "Chloramines": 0.0,
+    "Sulfate": 23.84,
+    "Conductivity": 0.0,
+    "Organic_carbon": 0.0,
+    "Trihalomethanes": 4.95,
+    "Turbidity": 0.0,
+    "Potability": 0.0
+  },
+  "label_distribution": {
+    "Tidak Layak (0)": 1998,
+    "Layak (1)": 1278
+  },
+  "duplicates": 0,
+  "timestamp": "2026-06-05 13:30:16"
+}
