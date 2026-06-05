@@ -1,7 +1,8 @@
-# Folder output (tapi tetap simpan subfolder)
-output/figures/*.png
+# Folder output
 output/model/
 output/*.parquet
+# Simpan gambar hasil analisis
+# output/figures/*.png  <-- sengaja tidak di-ignore agar terlihat di GitHub
 
 # Python
 __pycache__/
